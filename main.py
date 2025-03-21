@@ -1,27 +1,37 @@
+from pathlib import Path
+from datetime import datetime
+
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage
+from langchain_core.output_parsers import PydanticOutputParser
+
+from schemas.candidate import Candidate
+from extractor.candidate import prompt_template
 
 def main():
-    model = init_chat_model("gemini-2.0-flash-001", model_provider="google_vertexai")
+    llm = init_chat_model("gemini-2.0-flash-001", model_provider="google_vertexai")
 
-    prompt_template = PromptTemplate.from_template("Tell me a joke about {topic}")
-    prompt = prompt_template.invoke({"topic": "cats"})
+    inpath = Path('./db')
+    file_name = Path('resume_example.txt')
+    text = ''
+    with open(inpath / file_name, 'r') as infile:
+        for line in infile:
+            text += line
 
-    prompt_template = ChatPromptTemplate([
-        ("system", "You are a comedian whose jokes create uncomfortable situations"),
-        ("user", "Tell me a joke about {topic}")
-    ])
-    prompt = prompt_template.invoke({"topic": "cats"})
+    # Parser
+    parser = PydanticOutputParser(pydantic_object=Candidate)
 
-    prompt_template = ChatPromptTemplate([
-        ("system", "You are a comedian with a dark humour style"),
-        MessagesPlaceholder("msgs")
-    ])
+    # Prompt
+    prompt = prompt_template.partial(format_instructions=parser.get_format_instructions())
 
-    prompt = prompt_template.invoke({"msgs": [HumanMessage(content="Tell me a joke about climate change!")]})
+    chain = prompt | llm | parser
+    response = chain.invoke({"text": text})
 
-    response = model.invoke(prompt)
-    print(response.content)
+    outpath = Path('./extractor/responses')
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    file_name_unique = f"{file_name.stem}_{timestamp}{file_name.suffix}"
+    with open(outpath / file_name_unique, 'w') as outfile:
+        print(response, file=outfile)
 
 main()
