@@ -1,0 +1,62 @@
+John A. Smith
+123 Technology Drive, Austin, TX 78701
+Phone: (512) 555-0123 | Email: john.smith@email.com
+LinkedIn: https://linkedin.com/in/johnsmith | GitHub: https://github.com/johnsmith
+
+PROFESSIONAL SUMMARY
+Experienced Software Engineer with 7+ years in full-stack web development, specializing in Python and JavaScript frameworks. Proven track record of delivering scalable solutions and leading small teams. Passionate about clean code and innovative technology solutions.
+
+WORK EXPERIENCE
+Senior Software Engineer
+Tech Innovations Inc., Austin, TX
+June 2019 - Present
+- Lead development of cloud-based SaaS platform serving 100,000+ users
+- Implemented RESTful APIs using Python/Django, improving response time by 40%
+- Mentored 3 junior developers in Agile methodologies
+- Technologies: Python, Django, PostgreSQL, AWS, React
+
+Software Developer
+Bright Solutions, Houston, TX
+May 2016 - May 2019
+- Developed and maintained e-commerce platform processing $2M+ in annual sales
+- Created responsive front-end interfaces using React and TypeScript
+- Optimized database queries, reducing load times by 25%
+- Technologies: JavaScript, React, Node.js, MongoDB
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Texas at Austin, Austin, TX
+Graduated: May 2016
+- GPA: 3.8/4.0
+- Relevant Coursework: Data Structures, Algorithms, Software Engineering
+- Honors: Dean's List (6 semesters)
+
+CERTIFICATIONS
+- AWS Certified Solutions Architect - Associate (2021)
+- Professional Scrum Master I (2020)
+
+SKILLS
+- Programming: Python, JavaScript, TypeScript, Java, SQL
+- Frameworks: Django, React, Node.js, Spring
+- Tools: Git, Docker, Jenkins, AWS
+- Soft Skills: Team Leadership, Problem Solving, Communication
+
+PROJECTS
+Personal Finance Web App (https://github.com/johnsmith/finance-app)
+- Built full-stack application for budget tracking
+- Features real-time data visualization and expense categorization
+- Tech: React, Python/Flask, PostgreSQL
+
+LANGUAGES
+- English (Native)
+- Spanish (Intermediate)
+
+VOLUNTEER EXPERIENCE
+Code Mentor
+CodeKids Austin, Austin, TX
+January 2020 - Present
+- Teach weekly coding classes to underprivileged youth
+- Developed curriculum for beginner Python programming
+
+REFERENCES
+Available upon request

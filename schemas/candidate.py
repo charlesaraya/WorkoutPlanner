@@ -1,5 +1,5 @@
-from typing import Optional, List
-from pydantic import BaseModel, Field, EmailStr, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, HttpUrl
+from typing import List, Optional, Dict
 from datetime import date
 from enum import Enum
 
@@ -21,88 +21,87 @@ class EmploymentType(str, Enum):
     TEMPORARY = "Temporary"
 
 class ContactInfo(BaseModel):
-    phone: Optional[str] = Field(None, pattern = r"^\+?1?\d{9,15}$", description="Phone number in international format")
-    email: Optional[EmailStr] = None
-    address: Optional[str] = None
-    linkedin: Optional[HttpUrl] = None
-    github: Optional[HttpUrl] = None
-    portfolio: Optional[HttpUrl] = None
-    website: Optional[HttpUrl] = None
+    phone: Optional[str] = Field(None, description="Candidate's phone number in international format")
+    email: Optional[EmailStr] = Field(None, description="Candidate's primary email address")
+    address: Optional[str] = Field(None, description="Candidate's physical mailing address")
+    linkedin: Optional[HttpUrl] = Field(None, description="URL to the candidate's LinkedIn profile")
+    github: Optional[HttpUrl] = Field(None, description="URL to the candidate's GitHub profile")
+    portfolio: Optional[HttpUrl] = Field(None, description="URL to the candidate's portfolio website")
+    website: Optional[HttpUrl] = Field(None, description="URL to the candidate's personal website")
 
 class Education(BaseModel):
-    institution: str
-    degree: Optional[str] = None
-    level: Optional[EducationLevel] = None
-    major: Optional[str] = None
-    minor: Optional[str] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    gpa: Optional[float] = Field(None, ge=0.0, le=4.0)
-    location: Optional[str] = None
-    relevant_coursework: Optional[List[str]] = None
-    honors: Optional[List[str]] = None
+    institution: str = Field(..., description="Name of the educational institution")
+    degree: Optional[str] = Field(None, description="Degree earned (e.g., Bachelor of Science)")
+    level: Optional[EducationLevel] = Field(None, description="Level of education achieved")
+    major: Optional[str] = Field(None, description="Primary field of study")
+    minor: Optional[str] = Field(None, description="Secondary field of study")
+    start_date: Optional[date] = Field(None, description="Date education began")
+    end_date: Optional[date] = Field(None, description="Date education completed")
+    gpa: Optional[float] = Field(None, ge=0.0, le=4.0, description="Grade Point Average on 4.0 scale")
+    location: Optional[str] = Field(None, description="City/State of the institution")
+    relevant_coursework: Optional[List[str]] = Field(None, description="List of relevant courses taken")
+    honors: Optional[List[str]] = Field(None, description="List of academic honors received")
 
 class Certification(BaseModel):
-    name: str
-    issuing_organization: Optional[str] = None
-    issue_date: Optional[date] = None
-    expiration_date: Optional[date] = None
-    credential_id: Optional[str] = None
-    credential_url: Optional[HttpUrl] = None
+    name: str = Field(..., description="Name of the certification")
+    issuing_organization: Optional[str] = Field(None, description="Organization that issued the certification")
+    issue_date: Optional[date] = Field(None, description="Date certification was issued")
+    expiration_date: Optional[date] = Field(None, description="Date certification expires, if applicable")
+    credential_id: Optional[str] = Field(None, description="Unique identifier for the certification")
+    credential_url: Optional[HttpUrl] = Field(None, description="URL to verify the certification")
 
 class WorkExperience(BaseModel):
-    company: str
-    position: str
-    employment_type: Optional[EmploymentType] = None
-    location: Optional[str] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = Field(None, description="None if current position")
-    responsibilities: Optional[List[str]] = None
-    achievements: Optional[List[str]] = None
-    technologies: Optional[List[str]] = None
+    company: str = Field(..., description="Name of the employer")
+    position: str = Field(..., description="Job title held")
+    employment_type: Optional[EmploymentType] = Field(None, description="Type of employment")
+    location: Optional[str] = Field(None, description="City/State of the workplace")
+    start_date: Optional[date] = Field(None, description="Date employment began")
+    end_date: Optional[date] = Field(None, description="Date employment ended, None if current")
+    responsibilities: Optional[List[str]] = Field(None, description="List of job duties")
+    achievements: Optional[List[str]] = Field(None, description="List of notable accomplishments")
+    technologies: Optional[List[str]] = Field(None, description="Technologies used in the role")
 
 class Project(BaseModel):
-    name: str
-    description: Optional[str] = None
-    role: Optional[str] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    technologies: Optional[List[str]] = None
-    url: Optional[HttpUrl] = None
+    name: str = Field(..., description="Name of the project")
+    description: Optional[str] = Field(None, description="Brief description of the project")
+    role: Optional[str] = Field(None, description="Candidate's role in the project")
+    start_date: Optional[date] = Field(None, description="Date project began")
+    end_date: Optional[date] = Field(None, description="Date project completed")
+    technologies: Optional[List[str]] = Field(None, description="Technologies used in the project")
+    url: Optional[HttpUrl] = Field(None, description="URL to project details or repository")
 
 class Language(BaseModel):
-    name: str
-    proficiency: Optional[str] = Field(default=None, pattern=r"^(Native|Fluent|Advanced|Intermediate|Basic)$")
+    name: str = Field(..., description="Name of the language")
+    proficiency: Optional[str] = Field(None, description="Proficiency level in the language")
 
 class Candidate(BaseModel):
-    # Main information
-    first_name: str
-    last_name: str
-    middle_name: Optional[str] = None
-    title: Optional[str] = None
-    summary: Optional[str] = None
-    contact_info: Optional[ContactInfo] = None
+    first_name: str = Field(..., description="Candidate's first name")
+    last_name: str = Field(..., description="Candidate's last name")
+    middle_name: Optional[str] = Field(None, description="Candidate's middle name or initial")
+    title: Optional[str] = Field(None, description="Professional title (e.g., Software Engineer)")
+    summary: Optional[str] = Field(None, description="Brief professional summary")
+    contact_info: Optional[ContactInfo] = Field(None, description="Candidate's contact information")
 
-    # Work-related fields
-    work_experience: Optional[List[WorkExperience]] = None
-    total_years_experience: Optional[float] = Field(None, ge=0)
-    current_employer: Optional[str] = None
-    current_position: Optional[str] = None
+    work_experience: Optional[List[WorkExperience]] = Field(None, description="List of work experiences")
+    total_years_experience: Optional[float] = Field(None, ge=0, description="Total years of professional experience")
+    current_employer: Optional[str] = Field(None, description="Name of current employer")
+    current_position: Optional[str] = Field(None, description="Current job title")
 
-    # Education
-    education: Optional[List[Education]] = None
-    highest_education_level: Optional[EducationLevel] = None
+    education: Optional[List[Education]] = Field(None, description="List of educational experiences")
+    highest_education_level: Optional[EducationLevel] = Field(None, description="Highest level of education achieved")
 
-    # Skills and competencies
-    technical_skills: Optional[List[str]] = None
-    soft_skills: Optional[List[str]] = None
-    certifications: Optional[List[Certification]] = None
+    technical_skills: Optional[List[str]] = Field(None, description="List of technical skills")
+    soft_skills: Optional[List[str]] = Field(None, description="List of soft skills")
+    certifications: Optional[List[Certification]] = Field(None, description="List of professional certifications")
 
-    # Projects and portfolio
-    projects: Optional[List[Project]] = None
+    projects: Optional[List[Project]] = Field(None, description="List of personal or professional projects")
 
-    # Additional information
-    languages: Optional[List[Language]] = None
-    awards: Optional[List[str]] = None
-    publications: Optional[List[str]] = None
-    patents: Optional[List[str]] = None
+    languages: Optional[List[Language]] = Field(None, description="List of languages spoken")
+    awards: Optional[List[str]] = Field(None, description="List of awards received")
+    publications: Optional[List[str]] = Field(None, description="List of published works")
+    patents: Optional[List[str]] = Field(None, description="List of patents held")
+    volunteer_experience: Optional[List[WorkExperience]] = Field(None, description="List of volunteer experiences")
+    professional_associations: Optional[List[str]] = Field(None, description="List of professional memberships")
+
+    references: Optional[List[ContactInfo]] = Field(None, description="List of professional references")
+    references_available: Optional[bool] = Field(None, description="Indicates if references are available upon request")
