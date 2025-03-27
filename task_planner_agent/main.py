@@ -9,13 +9,10 @@ def main():
 
     try:
         result = graph.invoke({'task': user_input})
+        print("\nYour Plan:")
+        print(result["final_plan"])
     except ValueError as e:
         print(f"Error: {e}")
-    except Exception as e:
-        print(f"Something went wrong: {e}")
-
-    print("\nYour Plan:")
-    print(result["final_plan"])
 
 if __name__ == "__main__":
     main()
