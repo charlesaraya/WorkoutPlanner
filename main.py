@@ -27,11 +27,6 @@ def main():
 
     chain = prompt | llm | parser
     response = chain.invoke({"text": text})
-
-    outpath = Path('./extractor/responses')
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    file_name_unique = f"{file_name.stem}_{timestamp}{file_name.suffix}"
-    with open(outpath / file_name_unique, 'w') as outfile:
-        print(response, file=outfile)
+    print(response)
 
 main()
