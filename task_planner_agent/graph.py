@@ -15,6 +15,8 @@ class PlannerState(TypedDict):
 # Nodes
 def input_node(state: PlannerState) -> PlannerState:
     """Processes the input task"""
+    if not state["task"]:
+        raise ValueError("Please provide a valid task.")
     return {'task': state['task']}
 
 def breakdown_node(state: PlannerState) -> PlannerState:
