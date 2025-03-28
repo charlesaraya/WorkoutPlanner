@@ -1,8 +1,46 @@
 # Workout Planner Agent
-The Workout Planner Agent helps users plan a workout session. It breaks down the amount of time a user wants to put in, and breaks a session into workout steps and their timeline. 
+The Workout Planner Agent, a little project built with LangGraph that helps users plan an actionable workout session with the help of an LLM. In a nutshell, based on the time a user wants to put in their workout, it breaks a session into different routines and their timeline. Whether you’re planning a short at-home workout, a chill yoga session, or a hardcore body-building grind, this agent should got you covered. It's my playground for mastering LangGraph workflows, and God knows where where the journey will take me.
 
-The agent should:
-* Asks the user for input. i.e."Plan a 1-hour workout session."
-* Breaks down the workout into smaller steps (e.g., warm-up, main exercise, cool-down).
-* Assigns a time durations to each step.
-* Returns the plan to the user in a clear format.
+## Feats
+* **LLM-Powered**: Leverages `GPT-3.5-turbo` for intelligent task breakdown and timing.
+* **Dynamic Steps**: The LLM crafts steps based on your task—workouts get cardio, yoga gets poses, and random tasks get a sensible default.
+* **Conditional Flow**: Miss a time? It loops back to ask you.
+* **Error Handling**: Catches bad inputs and keeps you in the loop with clear feedback.
+
+### Setup
+Clone this repo:
+```
+git clone https://github.com/yourusername/task-planner-agent.git
+cd task-planner-agent
+```
+Install dependencies:
+```
+pip install -r requirements.txt
+```
+Set your API key:
+```
+export OPENAI_API_KEY="your-key-here"
+```
+
+### Run It
+Fire it up with:
+```
+python main.py
+```
+
+Try inputs like:
+
+* "Plan a 1-hour workout session"
+* "Plan a 30-minute yoga session"
+* "Plan a study session" (it’ll ask for a time)
+
+Example Output:
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+
+```
+Plan a 1-hour workout session (60 min):
+* Warm-up (10 min)
+* Cardio (20 min)
+* Strength (20 min)
+* Cool-down (10 min)
+```
