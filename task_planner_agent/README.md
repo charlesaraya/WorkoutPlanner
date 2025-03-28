@@ -8,6 +8,13 @@ The agent is a solid foundation with LangGraph, LLM integration, and conditional
 * **Conditional Flow**: Missed the workout time? Are suggested timings wrong? It loops back to ask you.
 * **Error Handling**: Catches bad inputs and keeps you in the loop with clear feedback.
 
+## Workflow
+* **Input**: You throw in a task (e.g., "Plan a 1-hour workout session"), and the agent uses the LLM to extract the task type (e.g. "workout", "yoga session", "boxing", etc.) and total time (60 minutes).
+* **Task Breakdown**: The LLM crafts a list of steps tailored to your task, like "Warm-up", "Cardio", and "Bodyweight Squats" and so on for a regular workout session.
+* **Timing**: The agent assigns timings to each step, making sure they sum up to your total time. If they don’t match, it loops back and tries again until it gets it correct.
+* **Format**: You get a clean, formatted plan, like "Warm-up (10 min), Cardio (40 min), Cool-down (10 min)."
+* **Feedback Loop**: Tell the agent to adjust the plan to your taste (e.g., "Too much Cardio" or "Add stretching"). The LLM jumps in, figures out if it needs to tweat steps in the plan or fix the timing, and loops back to adjust the plan.
+
 ### Setup
 Clone this repo:
 ```
