@@ -1,6 +1,5 @@
 from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage, AIMessage
+from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
 from langgraph.graph import START, END, StateGraph
 
 from typing import TypedDict, Literal, List
