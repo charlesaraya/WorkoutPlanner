@@ -1,10 +1,11 @@
 # Workout Planner Agent
-The Workout Planner Agent, a little project built with LangGraph that helps users plan an actionable workout session with the help of an LLM. In a nutshell, based on the time a user wants to put in their workout, it breaks a session into different routines and their timeline. Whether you’re planning a short at-home workout, a chill yoga session, or a hardcore body-building grind, this agent should got you covered. It's my playground for mastering LangGraph workflows, and God knows where where the journey will take me.
+The Workout Planner Agent, a little project built with LangGraph that helps users plan an actionable workout session. In a nutshell, based on the time a user wants to put in their workout, it breaks a session into different routines and their timeline. Whether you’re planning a short at-home workout, a chill yoga session, or a hardcore body-building grind, this agent should got you covered. It's my playground for mastering LangGraph workflows, and God knows where where the journey will take me.
 
 ## Feats
+The agent is a solid foundation with LangGraph, LLM integration, and conditional workflows:
 * **LLM-Powered**: Leverages `GPT-3.5-turbo` for intelligent task breakdown and timing.
 * **Dynamic Steps**: The LLM crafts steps based on your task—workouts get cardio, yoga gets poses, and random tasks get a sensible default.
-* **Conditional Flow**: Miss a time? It loops back to ask you.
+* **Conditional Flow**: Missed the workout time? Are suggested timings wrong? It loops back to ask you.
 * **Error Handling**: Catches bad inputs and keeps you in the loop with clear feedback.
 
 ### Setup
