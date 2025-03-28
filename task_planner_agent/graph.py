@@ -1,8 +1,10 @@
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langgraph.graph import START, END, StateGraph
 
 from typing import TypedDict, Literal, List
+import json
 
 class PlannerState(TypedDict):
     task: str           # e.g., "Plan a 1-hour workout session"
@@ -12,7 +14,7 @@ class PlannerState(TypedDict):
     timings: List[int]  # e.g. [10, 20, 5, 20, 5]
     final_plan: str     # e.g., "Final 1-hour workout session: Warm-up for 10 min, Main excercise for 20, ..."
 
-llm = ChatOpenAI(model="gpt-3.5-turbo")
+llm = ChatOpenAI(model="gpt-4o-mini")
 
 # Nodes
 def input_node(state: PlannerState) -> PlannerState:
@@ -20,14 +22,11 @@ def input_node(state: PlannerState) -> PlannerState:
     if not state["task"]:
         raise ValueError("Please provide a valid task.")
 
-    # Prompt to extract task type and total time
-    extract_prompt = PromptTemplate(
-        input_variables=["task"],
-        template="Given the input '{task}', extract the task type, and the total time in minutes (e.g., 60 for 1-hour, 30 for 30-minutes) if specified otherwise None. Return as JSON: {{'task_type': str, 'total_time': int | None}}"
-    )
-    chain = extract_prompt | llm
-    response = chain.invoke({"task": state["task"]})
-    result = eval(response.content) # Convert JSON string to dict (ensure LLM returns valid JSON)
+    messages = [SystemMessage(content="""You are a workout planner. Extract the task type and total time in minutes from the user's input. If no time is specified, set total_time to None. Returns a plain JSON string: {"task_type": str, "total_time": int or None}""")]
+    messages.append(HumanMessage(content=f"Task: {state['task']}"))
+
+    response = llm.invoke(messages)
+    result = json.loads(response.content)
 
     state["task_type"] = result["task_type"]
     state["total_time"] = result["total_time"]
@@ -35,14 +34,14 @@ def input_node(state: PlannerState) -> PlannerState:
 
 def breakdown_node(state: PlannerState) -> PlannerState:
     """Breaks the task into steps"""
-    breakdown_prompt = PromptTemplate(
-        input_variables=["task_type"],
-        template="Given the input '{task_type}', provide an extensive list of related workout routine steps (eg: Warm-up, Full-body, Cardio, ...). If the task is not related to physical workout or excercise return None. Otherwise return as JSON: {{'steps': List[str]}}"
-    )
-    chain = breakdown_prompt | llm
-    response = chain.invoke({"task_type": state["task_type"], "total_time": state["total_time"]})
-    result = eval(response.content)
-    return {"steps": result["steps"]}
+    messages = [SystemMessage(content="""You are a workout planner. Given the task type, provide a list of routine steps related to the specific task type. Name each name with one or two keywords. If not workout-related, return None. Returns a plain JSON string (not in markdown or other formatting): {"steps": List[str]}""")]
+    messages.append(HumanMessage(content=f"Task type: {state['task_type']}"))
+
+    response = llm.invoke(messages)
+    result = json.loads(response.content)
+
+    state["steps"] = result["steps"]
+    return state
 
 # Conditional routing functions
 def check_time(state: PlannerState) -> Literal["ask_time", "timing"]:
@@ -59,7 +58,7 @@ def ask_time_node(state: PlannerState) -> PlannerState:
     # Re-extract total_time with updated task
     ask_time_prompt = PromptTemplate(
         input_variables=["task"],
-        template="Given the input '{task}', extract the total time in minutes (e.g., '60' for 1-hour). Return as JSON: {{'total_time': int}}"
+        template="Given the input '{task}', extract the total time in minutes (e.g., '60' for 1-hour). Returns a plain JSON string (not in markdown or other formatting): {{'total_time': int}}"
     )
     chain = ask_time_prompt | llm
     response = chain.invoke({"task": state["task"]})
@@ -68,14 +67,12 @@ def ask_time_node(state: PlannerState) -> PlannerState:
     return state
 
 def timing_node(state: PlannerState) -> PlannerState:
-    """Assigns a time for each step in the plan (assume format like "1-hour" for now)"""
-    timing_prompt = PromptTemplate(
-        input_variables=["total_time", "steps"],
-        template="Given the input available, select a sensible subset of '{steps}' that could fit into a workout session of '{total_time}'. Include time to warm-up and coold-down. Return as JSON: {{'steps': List[str], 'timings': List(int)}} where steps is the updated subset of steps."
-    )
-    chain = timing_prompt | llm
-    response = chain.invoke({"total_time": state["total_time"], "steps": state["steps"]})
-    result = eval(response.content)
+    """Assigns a time for each step in the plan"""
+    messages = [SystemMessage(content=f"""You are a workout planner. Given the steps and total time, assign timings that sum exactly to {state['total_time']} minutes. Include warm-up and cool-down if necessary. Returns a plain JSON string (not in markdown or other formatting): {{"steps": List[str], "timings": List[int]}}""")]
+    messages.append(HumanMessage(content=f"Steps: {state['steps']}\nTotal time: {state['total_time']} minutes"))
+
+    response = llm.invoke(messages)
+    result = json.loads(response.content)
 
     total_timings = sum(result["timings"])
     if state["total_time"] != total_timings:
