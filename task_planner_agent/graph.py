@@ -56,13 +56,12 @@ def ask_time_node(state: PlannerState) -> PlannerState:
     state["task"] = f"{state['task']} for {user_input}"
 
     # Re-extract total_time with updated task
-    ask_time_prompt = PromptTemplate(
-        input_variables=["task"],
-        template="Given the input '{task}', extract the total time in minutes (e.g., '60' for 1-hour). Returns a plain JSON string (not in markdown or other formatting): {{'total_time': int}}"
-    )
-    chain = ask_time_prompt | llm
-    response = chain.invoke({"task": state["task"]})
-    result = eval(response.content)
+    messages = [SystemMessage(content="""You are a workout planner. Given the task, extract the total time in minutes from the user's input. Returns a plain JSON string (not in markdown or other formatting): {{"total_time": int}}""")]
+    messages.append(HumanMessage(content=f"Task: {state["task"]}"))
+
+    response = llm.invoke(messages)
+    result = json.loads(response.content)
+
     state["total_time"] = result["total_time"]
     return state
 
