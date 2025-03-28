@@ -15,6 +15,7 @@ class PlannerState(TypedDict):
     final_plan: str     # e.g., "Final 1-hour workout session: Warm-up for 10 min, Main excercise for 20, ..."
     feedback: str       # e.g., "Too much Cardio, reduce it"
     action: str         # e.g., 'accept' | 'adjust_steps' | 'adjust_timings'
+    messages: list[AnyMessage]
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 
@@ -89,7 +90,7 @@ def timing_node(state: PlannerState) -> PlannerState:
     state["timings"] = result["timings"]
     return state
 
-def output_node(state: PlannerState) -> PlannerState:
+def format_node(state: PlannerState) -> PlannerState:
     """Formats the final plan"""
     total_time = sum(state["timings"])
     step_times = [f"{step} ({time} min)\n" for step, time in zip(state["steps"], state["timings"])]
@@ -120,11 +121,11 @@ def check_time(state: PlannerState) -> Literal["ask_time", "timing"]:
         return "ask_time"
     return "timing"
 
-def check_timing(state: PlannerState) -> Literal["timing", "output"]:
+def check_timing(state: PlannerState) -> Literal["timing", "format"]:
     """Route based on whether timings match the expected total time of the task"""
     if state["total_time"] != sum(state["timings"]):
         return "timing"
-    return "output"
+    return "format"
 
 def check_feedback(state: PlannerState) -> Literal["ask_time", "timing", "END"]:
     action = state.get("action", "accept") # fallback if action is missing
@@ -145,15 +146,15 @@ def build_graph():
     builder.add_node("breakdown", breakdown_node)
     builder.add_node("ask_time", ask_time_node)
     builder.add_node("timing", timing_node)
-    builder.add_node("output", output_node)
+    builder.add_node("format", format_node)
     builder.add_node("feedback_node", feedback_node)
     # Connect nodes
     builder.add_edge(START, "input")
     builder.add_edge("input", "breakdown")
     builder.add_conditional_edges("breakdown", check_time, {"ask_time": "ask_time", "timing": "timing"})
     builder.add_conditional_edges("ask_time", check_time, {"ask_time": "ask_time", "timing": "timing"})
-    builder.add_conditional_edges("timing", check_timing, {"timing": "timing", "output": "output"})
-    builder.add_edge("output", "feedback_node")
+    builder.add_conditional_edges("timing", check_timing, {"timing": "timing", "format": "format"})
+    builder.add_edge("format", "feedback_node")
     builder.add_conditional_edges("feedback_node", check_feedback, {"breakdown": "breakdown", "timing": "timing", END: END})
 
     return builder.compile()
