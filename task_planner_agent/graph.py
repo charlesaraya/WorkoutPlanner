@@ -43,13 +43,6 @@ def breakdown_node(state: PlannerState) -> PlannerState:
     state["steps"] = result["steps"]
     return state
 
-# Conditional routing functions
-def check_time(state: PlannerState) -> Literal["ask_time", "timing"]:
-    """Route based on whether total_time is provided"""
-    if state["total_time"] is None or state["total_time"] <= 0:
-        return "ask_time"
-    return "timing"
-
 def ask_time_node(state: PlannerState) -> PlannerState:
     """Asks the user to provide a time if not specified"""
     user_input = input("Can you please provide a workout duration (e.g., '1-hour', '30-minutes'): ")
@@ -73,10 +66,6 @@ def timing_node(state: PlannerState) -> PlannerState:
     response = llm.invoke(messages)
     result = json.loads(response.content)
 
-    total_timings = sum(result["timings"])
-    if state["total_time"] != total_timings:
-        raise ValueError(f"LLM-assigned timings ({total_timings} min) do not match total time ({state['total_time']} min)")
-
     state["steps"] = result["steps"]
     state["timings"] = result["timings"]
     return state
@@ -87,6 +76,19 @@ def output_node(state: PlannerState) -> PlannerState:
     step_times = [f"{step} ({time} min)\n" for step, time in zip(state['steps'], state['timings'])]
     final_plan = f"{state['task']} ({total_time} min):\n* {'* '.join(step_times)}"
     return {'final_plan': final_plan}
+
+# Conditional routing functions
+def check_time(state: PlannerState) -> Literal["ask_time", "timing"]:
+    """Route based on whether total_time is provided"""
+    if state["total_time"] is None or state["total_time"] <= 0:
+        return "ask_time"
+    return "timing"
+
+def check_timing(state: PlannerState) -> Literal["timing", "output"]:
+    """Route based on whether timings match the expected total time of the task"""
+    if state["total_time"] != sum(state["timings"]):
+        return "timing"
+    return "output"
 
 # Build Graph
 def build_graph():
@@ -103,7 +105,7 @@ def build_graph():
     builder.add_edge("input", "breakdown")
     builder.add_conditional_edges("breakdown", check_time, {"ask_time": "ask_time", "timing": "timing"})
     builder.add_conditional_edges("ask_time", check_time, {"ask_time": "ask_time", "timing": "timing"})
-    builder.add_edge("timing", "output")
+    builder.add_conditional_edges("timing", check_timing, {"timing": "timing", "output": "output"})
     builder.add_edge("output", END)
 
     return builder.compile()
