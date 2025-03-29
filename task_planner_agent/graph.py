@@ -1,6 +1,7 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
 from langgraph.graph import START, END, StateGraph
+from langgraph.checkpoint.memory import MemorySaver
 
 from typing import TypedDict, Literal, List
 import json
@@ -14,7 +15,6 @@ class PlannerState(TypedDict):
     final_plan: str     # e.g., "Final 1-hour workout session: Warm-up for 10 min, Main excercise for 20, ..."
     feedback: str       # e.g., "Too much Cardio, reduce it"
     action: str         # e.g., 'accept' | 'adjust_steps' | 'adjust_timings'
-    messages: list[AnyMessage]
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 
@@ -57,7 +57,7 @@ def breakdown_node(state: PlannerState) -> PlannerState:
     result = json.loads(response.content)
 
     state["steps"] = result["steps"]
-    state["feedback"] = '' # Reset feedback
+    state["feedback"], state["action"] = '', '' # Reset feedback
     return state
 
 def ask_time_node(state: PlannerState) -> PlannerState:
@@ -156,4 +156,6 @@ def build_graph():
     builder.add_edge("format", "feedback_node")
     builder.add_conditional_edges("feedback_node", check_feedback, {"breakdown": "breakdown", "timing": "timing", END: END})
 
-    return builder.compile()
+    # Initialize in-memory key-value store
+    memory = MemorySaver()
+    return builder.compile(checkpointer=memory)
