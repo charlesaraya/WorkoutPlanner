@@ -4,7 +4,8 @@ from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.memory import MemorySaver
 
 from typing import TypedDict, Literal, List
-import json
+
+from utils import parse_response
 
 class PlannerState(TypedDict):
     task: str           # e.g., "Plan a 1-hour workout session"
@@ -41,11 +42,7 @@ def input_node(state: PlannerState) -> PlannerState:
     messages.append(HumanMessage(content=f"Task: {state["task"]}"))
 
     response = llm.invoke(messages)
-    try:
-        result = json.loads(response.content)
-    except json.JSONDecodeError as e:
-        print(f"JSON parsing failed. Raw response: {response.content}")
-        raise ValueError(f"Invalid JSON from LLM: {e}")
+    result = parse_response(response.content)
 
     state["task_type"] = result["task_type"]
     state["total_time"] = result["total_time"]
@@ -58,7 +55,7 @@ def breakdown_node(state: PlannerState) -> PlannerState:
     messages.append(HumanMessage(content=human_message))
 
     response = llm.invoke(messages)
-    result = json.loads(response.content)
+    result = parse_response(response.content)
 
     state["steps"] = result["steps"]
     state["feedback"], state["action"] = '', '' # Reset feedback
@@ -74,7 +71,7 @@ def ask_time_node(state: PlannerState) -> PlannerState:
     messages.append(HumanMessage(content=f"Task: {state["task"]}"))
 
     response = llm.invoke(messages)
-    result = json.loads(response.content)
+    result = parse_response(response.content)
 
     state["total_time"] = result["total_time"]
     return state
@@ -87,7 +84,7 @@ def timing_node(state: PlannerState) -> PlannerState:
     messages.append(HumanMessage(content=human_message_with_feedback))
 
     response = llm.invoke(messages)
-    result = json.loads(response.content)
+    result = parse_response(response.content)
 
     state["steps"] = result["steps"]
     state["timings"] = result["timings"]
@@ -111,7 +108,7 @@ def feedback_node(state: PlannerState) -> PlannerState:
     messages.append(HumanMessage(content=f"Current Plan: {state["final_plan"]}\nUser Feedback: {user_feedback}"))
 
     response = llm.invoke(messages)
-    result = json.loads(response.content)
+    result = parse_response(response.content)
 
     state["feedback"] = result["feedback"]
     state["action"] = result["action"]
