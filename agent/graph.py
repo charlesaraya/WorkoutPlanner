@@ -5,6 +5,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from typing import TypedDict, Literal, List
 
+from config import OPENAI_API_KEY
 from utils import parse_response
 
 class PlannerState(TypedDict):
