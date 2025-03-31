@@ -1,8 +1,8 @@
 from .graph import build_graph
 
 class Agent:
-    def __init__(self, enable_feedback_node=True):
-        self.__graph = build_graph(enable_feedback_node)
+    def __init__(self, db, enable_feedback_node=True):
+        self.__graph = build_graph(db, enable_feedback_node)
 
     def run(self, task: str, thread_id: str):
         initial_state = {

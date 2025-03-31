@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from agent.agent import Agent
 
 app = FastAPI()
-agent = Agent(enable_feedback_node=False)
+agent = Agent(db = "db/checkpoints.sqlite", enable_feedback_node=False)
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")

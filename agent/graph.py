@@ -1,7 +1,8 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
 from langgraph.graph import START, END, StateGraph
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
+import sqlite3
 
 from typing import TypedDict, Literal, List
 
@@ -139,7 +140,7 @@ def check_feedback(state: PlannerState) -> Literal["ask_time", "timing", "END"]:
     return END # fallback
 
 # Build Graph
-def build_graph(enable_feedback_node):
+def build_graph(db, enable_feedback_node):
     # Initialize the StateGraph with the PlannerState schema
     builder = StateGraph(PlannerState)
     # Add nodes
@@ -161,6 +162,6 @@ def build_graph(enable_feedback_node):
     else:
         builder.add_edge("format", END)
 
-    # Initialize in-memory key-value store
-    memory = MemorySaver()
+    conn = sqlite3.connect(db, check_same_thread=False)
+    memory = SqliteSaver(conn)
     return builder.compile(checkpointer=memory)

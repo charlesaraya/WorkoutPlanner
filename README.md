@@ -7,7 +7,8 @@ The agent is a solid foundation with LangGraph, LLM integration, and conditional
 * **Dynamic Steps**: The LLM crafts steps based on your task—workouts get cardio, yoga gets poses, and random tasks get a sensible default.
 * **Conditional Flow**: Prompts for missing durations and adjusts timings if they don’t align with the total.
 * **FastAPI Support**: Offers a RESTful API endpoint for task processing alongside the CLI.
-* **Web Interface**: Features a Jinja2-templated home page with HTMX for dynamic task submission and plan display. Does not support feedback.
+* **Web Interface**: Features a Jinja2-templated home page with HTMX for dynamic task submission and plan display. The feedback loop is disabled.
+* **Persistance with SQLite**: The agent uses `SqliteSaver` to pick up right where the user left it.
 
 ## Workflow
 * **Input**: You throw in a task (e.g., "Plan a 1-hour workout session"), and the agent uses the LLM to extract the task type (e.g. "workout", "yoga session", "boxing", etc.) and total time (60 minutes).

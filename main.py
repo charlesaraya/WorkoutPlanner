@@ -5,16 +5,19 @@ from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
 from thread_manager import ThreadDB
 from agent.agent import Agent
 
-agent = Agent()
-
 def main():
     STOP_SESSION = False
     parser = argparse.ArgumentParser(description="Process command-line arguments.")
     parser.add_argument("--thread", type=int, help="Session identifier", required=False)
+    parser.add_argument("--db", type=str, help="DB identifier", required=False)
     args = parser.parse_args()
 
     thread_db = ThreadDB()
     thread_id = thread_db.add(args.thread) if args.thread else thread_db.add()
+
+    db = args.db if args.db else "db/checkpoints.sqlite"
+
+    agent = Agent(db)
 
     while(not STOP_SESSION):
         # Get user input
