@@ -26,12 +26,12 @@ def main():
         except Exception as e:
             print(f"Error: {e}")
 
-        print("\nYour Plan:")
-        print(result["final_plan"])
+        print("\nYour Plan:\n",result["final_plan"])
 
         continue_session = input("\n* To continue your session, press [Enter]" +
                                 "\n* To start a new session, type 'new'" +
-                                "\n* To quit, type 'quit'")
+                                "\n* To quit, type 'quit'\n" +
+                                ">>> ")
         if continue_session == '':
             continue
         elif continue_session == 'new':
