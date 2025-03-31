@@ -21,8 +21,6 @@ def main():
         user_input = input("Enter a task to plan (e.g., 'Plan a 1-hour workout session') : ")
         try:
             result = agent.run(user_input, thread_id)
-        except ValueError as e:
-            print(f"Error: {e}")
         except Exception as e:
             print(f"Error: {e}")
 
