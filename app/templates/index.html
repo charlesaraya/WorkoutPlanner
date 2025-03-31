@@ -1,0 +1,29 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Task Manager Agent</title>
+        <link rel="stylesheet" href="/static/style.css">
+        <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Workout Planner Agent</h1>
+            <p>Enter your plan.</p>
+            <form hx-post="/process" hx-target="#response" hx-swap="innerHTML" hx-headers='{"Content-Type": "application/json"}'>
+                <label for="task">Task:</label>
+                <input type="text" id="task" name="task" placeholder="e.g., Plan a 1-hour workout session" required>
+                <br>
+                <label for="thread_id">Thread ID:</label>
+                <input type="text" id="thread_id" name="thread_id" placeholder="e.g., session_1" required>
+                <br>
+                <button type="submit">Plan It</button>
+            </form>
+            <div id="response" class="result-box">
+                <!-- Plan will appear here -->
+            </div>
+        </div>
+    </body>
+</html>

@@ -139,7 +139,7 @@ def check_feedback(state: PlannerState) -> Literal["ask_time", "timing", "END"]:
     return END # fallback
 
 # Build Graph
-def build_graph():
+def build_graph(enable_feedback_node):
     # Initialize the StateGraph with the PlannerState schema
     builder = StateGraph(PlannerState)
     # Add nodes
@@ -155,8 +155,11 @@ def build_graph():
     builder.add_conditional_edges("breakdown", check_time, {"ask_time": "ask_time", "timing": "timing"})
     builder.add_conditional_edges("ask_time", check_time, {"ask_time": "ask_time", "timing": "timing"})
     builder.add_conditional_edges("timing", check_timing, {"timing": "timing", "format": "format"})
-    builder.add_edge("format", "feedback_node")
-    builder.add_conditional_edges("feedback_node", check_feedback, {"breakdown": "breakdown", "timing": "timing", END: END})
+    if enable_feedback_node:
+        builder.add_edge("format", "feedback_node")
+        builder.add_conditional_edges("feedback_node", check_feedback, {"breakdown": "breakdown", "timing": "timing", END: END})
+    else:
+        builder.add_edge("format", END)
 
     # Initialize in-memory key-value store
     memory = MemorySaver()
