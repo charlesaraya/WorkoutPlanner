@@ -3,7 +3,7 @@ import argparse
 from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
 
 from thread_manager import ThreadDB
-from agent import Agent
+from agent.agent import Agent
 
 agent = Agent()
 
@@ -20,8 +20,7 @@ def main():
         # Get user input
         user_input = input("Enter a task to plan (e.g., 'Plan a 1-hour workout session') : ")
         try:
-            config = {"configurable": {"thread_id": thread_id}}
-            result = agent.run({'task': user_input}, config)
+            result = agent.run(user_input, thread_id)
         except ValueError as e:
             print(f"Error: {e}")
         except Exception as e:
