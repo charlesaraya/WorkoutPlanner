@@ -5,9 +5,11 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 import sqlite3
 
 from typing import TypedDict, Literal, List
+from datetime import datetime
 
 from config import OPENAI_API_KEY
 from utils import parse_response
+from integrations.google_calendar import save_plan_to_calendar
 
 class PlannerState(TypedDict):
     task: str           # e.g., "Plan a 1-hour workout session"
@@ -17,7 +19,9 @@ class PlannerState(TypedDict):
     timings: List[int]  # e.g. [10, 20, 5, 20, 5]
     final_plan: str     # e.g., "Final 1-hour workout session: Warm-up for 10 min, Main excercise for 20, ..."
     feedback: str       # e.g., "Too much Cardio, reduce it"
-    action: str         # e.g., 'accept' | 'adjust_steps' | 'adjust_timings'
+    action: str         # e.g., 'accept' | 'adjust_steps' | 'adjust_timings' | ...
+    calendar_event_link: str
+    start_time: str
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 
@@ -106,7 +110,7 @@ def feedback_node(state: PlannerState) -> PlannerState:
     user_feedback = input(feedback_prompt).lower()
 
     # Use LLM to interpret feedback
-    messages = [SystemMessage(content="""You are a task planner. Given the current plan and user feedback, determine the next action. Return plain JSON (no markdown or other formatting): {"feedback": 'str', "action": 'accept' | 'adjust_steps' | 'adjust_timings'}""")]
+    messages = [SystemMessage(content="""You are a task planner. Given the current plan and user feedback, determine the next action. Return plain JSON (no markdown or other formatting): {"feedback": 'str', "action": 'accept' | 'adjust_steps' | 'adjust_timings' | 'add_calendar'}""")]
     messages.append(HumanMessage(content=f"Current Plan: {state["final_plan"]}\nUser Feedback: {user_feedback}"))
 
     response = llm.invoke(messages)
@@ -115,6 +119,20 @@ def feedback_node(state: PlannerState) -> PlannerState:
     state["feedback"] = result["feedback"]
     state["action"] = result["action"]
     return state
+
+def calendar_node(state: PlannerState) -> PlannerState:
+    """Adds plan to Google Calendar"""
+    prompt = "When would you like to start?:"
+    start_time = input(prompt).lower()
+    # Use LLM to interpret feedback
+    messages = [SystemMessage(content="""You are a task planner. Given the current timestamp and the time at which the user wants to start a plan. Return plain JSON (no markdown or other formatting): {"start_time": "%Y-%m-%dT%H:%M:%S"}""")]
+    messages.append(HumanMessage(content=f"Time Now: {datetime.now()}\nStart plan at: {start_time}"))
+
+    response = llm.invoke(messages)
+    result = parse_response(response.content)
+    state["start_time"] = result["start_time"]
+    calendar_event_link = save_plan_to_calendar(state["task"], state["final_plan"], state["total_time"], state["start_time"])
+    return {"calendar_event_link": calendar_event_link}
 
 # Conditional routing functions
 def check_time(state: PlannerState) -> Literal["ask_time", "timing"]:
@@ -137,6 +155,8 @@ def check_feedback(state: PlannerState) -> Literal["ask_time", "timing", "END"]:
         return "breakdown"
     elif action == 'adjust_timings':
         return "timing"
+    elif action == 'add_calendar':
+        return "calendar"
     return END # fallback
 
 # Build Graph
@@ -150,6 +170,7 @@ def build_graph(db, enable_feedback_node):
     builder.add_node("timing", timing_node)
     builder.add_node("format", format_node)
     builder.add_node("feedback_node", feedback_node)
+    builder.add_node("calendar", calendar_node)
     # Connect nodes
     builder.add_edge(START, "input")
     builder.add_edge("input", "breakdown")
@@ -158,7 +179,8 @@ def build_graph(db, enable_feedback_node):
     builder.add_conditional_edges("timing", check_timing, {"timing": "timing", "format": "format"})
     if enable_feedback_node:
         builder.add_edge("format", "feedback_node")
-        builder.add_conditional_edges("feedback_node", check_feedback, {"breakdown": "breakdown", "timing": "timing", END: END})
+        builder.add_conditional_edges("feedback_node", check_feedback, {"breakdown": "breakdown", "timing": "timing", "calendar": "calendar", END: END})
+        builder.add_edge("calendar", END)
     else:
         builder.add_edge("format", END)
 
