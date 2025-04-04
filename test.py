@@ -1,4 +1,5 @@
 def test_rebase():
     print("testing rebase")
 
-test_rebase()
+if __name__ == '__main__':
+    test_rebase()
