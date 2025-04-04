@@ -6,3 +6,4 @@ def test_rebase():
 if __name__ == '__main__':
     test_rebase()
     print()
+    test_rebase()
