@@ -4,6 +4,7 @@ token.pickle
 *secret*
 studio
 
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
